@@ -1,4 +1,4 @@
-﻿using E_Commerce.API.Models.Domain;
+﻿using E_Commerce.API.Repositories.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce.API.Data

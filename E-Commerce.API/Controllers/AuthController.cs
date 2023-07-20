@@ -1,5 +1,7 @@
 ﻿using E_Commerce.API.Models.DTO;
 using E_Commerce.API.Repositories;
+using E_Commerce.API.Repositories.Interfaces;
+using E_Commerce.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,68 +12,39 @@ namespace E_Commerce.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly ITokenRepository tokenRepository;
+        private readonly IRegisterService registerService;
+        private readonly ILoginService loginService;
 
-        public AuthController(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository)
+        public AuthController(IRegisterService registerService, ILoginService loginService)
         {
-            this.userManager = userManager;
-            this.tokenRepository = tokenRepository;
+            this.registerService = registerService;
+            this.loginService = loginService;
         }
 
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequestDto)
         {
-            var identityUser = new IdentityUser
-            {
-                UserName = registerRequestDto.Username,
-                Email = registerRequestDto.Username
-            };
+            var registerResponse = await registerService.Register(registerRequestDto);
 
-            var identityResult = await userManager.CreateAsync(identityUser, registerRequestDto.Password);
-
-            if (identityResult.Succeeded)
+            if (registerResponse != null)
             {
-                if (registerRequestDto.Roles != null && registerRequestDto.Roles.Any())
-                {
-                    identityResult = await userManager.AddToRolesAsync(identityUser, registerRequestDto.Roles);
-                }
-                if (identityResult.Succeeded)
-                {
-                    return Ok("Registered. Please Login!");
-                }
+                return Ok("Registered. Please Login!");
             }
-            return BadRequest("Register Failed!");
+            return BadRequest("Register Failed");
         }
+
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login(LoginRequestDto loginRequestDto)
         {
-            var user = await userManager.FindByEmailAsync(loginRequestDto.Username);
-
-            if (user != null)
+            var loginResponse = await loginService.Login(loginRequestDto);
+            
+            if (loginResponse != null)
             {
-                var checkPasswordResult = await userManager.CheckPasswordAsync(user, loginRequestDto.Password);
-
-                if (checkPasswordResult)
-                {
-                    var roles = await userManager.GetRolesAsync(user);
-
-                    if (roles != null)
-                    {
-                        var jwtToken = tokenRepository.CreateJWTToken(user, roles.ToList());
-
-                        var response = new LoginResponseDto
-                        {
-                            JwtToken = jwtToken,
-                        };
-
-                        return Ok(response);
-                    }
-                }
+                return Ok(loginResponse);
             }
-            return BadRequest("Username or password incorrect!");
+            return BadRequest("Email or Password Incorrect");
         }
     }
 }

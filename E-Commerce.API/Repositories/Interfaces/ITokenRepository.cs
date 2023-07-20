@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace E_Commerce.API.Repositories
+namespace E_Commerce.API.Repositories.Interfaces
 {
     public interface ITokenRepository
     {

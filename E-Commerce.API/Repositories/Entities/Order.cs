@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using E_Commerce.API.Repositories.Entities;
+using System.ComponentModel.DataAnnotations;
 
-namespace E_Commerce.API.Models.Domain
+namespace E_Commerce.API.Repositories.Entities
 {
     public class Order
     {

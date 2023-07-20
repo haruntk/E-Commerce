@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using E_Commerce.API.Repositories;
 using Microsoft.OpenApi.Models;
+using E_Commerce.API.Repositories.Interfaces;
+using E_Commerce.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +53,8 @@ builder.Services.AddDbContext<ECommerceAuthDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("ECommerceAuthConnectionString")));
 
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<IRegisterService, RegisterService>();
+builder.Services.AddScoped<ILoginService, LoginService>();
 
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()

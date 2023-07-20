@@ -1,4 +1,4 @@
-﻿namespace E_Commerce.API.Repositories
+﻿namespace E_Commerce.API.Models.DTO
 {
     public class LoginResponseDto
     {
