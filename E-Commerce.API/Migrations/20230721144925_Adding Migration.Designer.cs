@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_Commerce.API.Migrations
 {
     [DbContext(typeof(ECommerceDbContext))]
-    [Migration("20230717091250_Adding ECommerceDbContext")]
-    partial class AddingECommerceDbContext
+    [Migration("20230721144925_Adding Migration")]
+    partial class AddingMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace E_Commerce.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.Category", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,7 +40,7 @@ namespace E_Commerce.API.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.Order", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.Order", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -48,9 +48,6 @@ namespace E_Commerce.API.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<Guid>("OrderItemId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -63,15 +60,16 @@ namespace E_Commerce.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderItemId");
-
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.OrderItem", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.OrderItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ProductId")
@@ -85,15 +83,20 @@ namespace E_Commerce.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrderId");
+
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItem");
+                    b.ToTable("OrderItems");
                 });
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.Product", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MainCategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -103,17 +106,17 @@ namespace E_Commerce.API.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.Property<Guid>("ProductCategoriesId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductCategoriesId");
+                    b.HasIndex("MainCategoryId");
 
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.ProductCategories", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.ProductCategories", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -122,55 +125,64 @@ namespace E_Commerce.API.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("ProductId");
+
                     b.ToTable("ProductCategories");
                 });
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.Order", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.OrderItem", b =>
                 {
-                    b.HasOne("E_Commerce.API.Models.Domain.OrderItem", "OrderItem")
+                    b.HasOne("E_Commerce.API.Repositories.Entities.Order", "Order")
                         .WithMany()
-                        .HasForeignKey("OrderItemId")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("OrderItem");
-                });
-
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.OrderItem", b =>
-                {
-                    b.HasOne("E_Commerce.API.Models.Domain.Product", "Product")
+                    b.HasOne("E_Commerce.API.Repositories.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Order");
+
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.Product", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.Product", b =>
                 {
-                    b.HasOne("E_Commerce.API.Models.Domain.ProductCategories", "ProductCategories")
+                    b.HasOne("E_Commerce.API.Repositories.Entities.Category", "MainCategory")
                         .WithMany()
-                        .HasForeignKey("ProductCategoriesId")
+                        .HasForeignKey("MainCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProductCategories");
+                    b.Navigation("MainCategory");
                 });
 
-            modelBuilder.Entity("E_Commerce.API.Models.Domain.ProductCategories", b =>
+            modelBuilder.Entity("E_Commerce.API.Repositories.Entities.ProductCategories", b =>
                 {
-                    b.HasOne("E_Commerce.API.Models.Domain.Category", "Category")
+                    b.HasOne("E_Commerce.API.Repositories.Entities.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("E_Commerce.API.Repositories.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("Product");
                 });
 #pragma warning restore 612, 618
         }

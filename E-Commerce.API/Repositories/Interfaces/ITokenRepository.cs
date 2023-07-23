@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace E_Commerce.API.Repositories.Interfaces
 {

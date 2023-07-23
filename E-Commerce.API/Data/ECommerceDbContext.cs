@@ -1,5 +1,9 @@
 ﻿using E_Commerce.API.Repositories.Entities;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System.Data;
 
 namespace E_Commerce.API.Data
 {
@@ -9,8 +13,16 @@ namespace E_Commerce.API.Data
         {
 
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ProductCategories>().HasOne(p => p.Product).WithMany().OnDelete(DeleteBehavior.ClientSetNull);
+        }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }
-    }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<ProductCategories> ProductCategories { get; set; }
+        }
+    
 }

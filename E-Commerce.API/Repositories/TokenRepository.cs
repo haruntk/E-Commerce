@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace E_Commerce.API.Repositories
@@ -32,8 +33,8 @@ namespace E_Commerce.API.Repositories
             var token = new JwtSecurityToken(
                 configuration["Jwt:Issuer"],
                 configuration["Jwt:Audience"],
-                claims,
-                expires: DateTime.Now.AddDays(1),
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(60),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

@@ -8,6 +8,8 @@ using E_Commerce.API.Repositories;
 using Microsoft.OpenApi.Models;
 using E_Commerce.API.Repositories.Interfaces;
 using E_Commerce.API.Services;
+using E_Commerce.API.Services.Interfaces;
+using E_Commerce.API.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,9 +54,13 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("ECommerceConnect
 builder.Services.AddDbContext<ECommerceAuthDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("ECommerceAuthConnectionString")));
 
+
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
-builder.Services.AddScoped<IRegisterService, RegisterService>();
-builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()

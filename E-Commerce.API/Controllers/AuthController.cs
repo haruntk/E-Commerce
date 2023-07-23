@@ -2,6 +2,7 @@
 using E_Commerce.API.Repositories;
 using E_Commerce.API.Repositories.Interfaces;
 using E_Commerce.API.Services;
+using E_Commerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,39 +13,37 @@ namespace E_Commerce.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IRegisterService registerService;
-        private readonly ILoginService loginService;
+        private readonly IUserService userService;
 
-        public AuthController(IRegisterService registerService, ILoginService loginService)
+        public AuthController(IUserService userService)
         {
-            this.registerService = registerService;
-            this.loginService = loginService;
+            this.userService = userService;
         }
 
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequestDto)
         {
-            var registerResponse = await registerService.Register(registerRequestDto);
+            var response = await userService.Register(registerRequestDto);
 
-            if (registerResponse != null)
+            if (response.IsSuccess)
             {
-                return Ok("Registered. Please Login!");
+                return Ok(response);
             }
-            return BadRequest("Register Failed");
+            return BadRequest(response);
         }
 
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login(LoginRequestDto loginRequestDto)
         {
-            var loginResponse = await loginService.Login(loginRequestDto);
-            
-            if (loginResponse != null)
+            var response = await userService.Login(loginRequestDto);
+
+            if (response.IsSuccess)
             {
-                return Ok(loginResponse);
+                return Ok(response);
             }
-            return BadRequest("Email or Password Incorrect");
+            return BadRequest(response);
         }
     }
 }

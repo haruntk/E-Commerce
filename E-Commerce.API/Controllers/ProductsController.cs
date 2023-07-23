@@ -7,5 +7,6 @@ namespace E_Commerce.API.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
+
     }
 }
