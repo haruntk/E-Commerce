@@ -1,4 +1,5 @@
-﻿using E_Commerce.API.Models.DTO;
+﻿using AutoMapper;
+using E_Commerce.API.Models.DTO;
 using E_Commerce.API.Repositories.Interfaces;
 using E_Commerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -9,12 +10,54 @@ namespace E_Commerce.API.Services
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly ITokenRepository tokenRepository;
+        private readonly IUserRepository userRepository;
+        private readonly IMapper mapper;
 
-        public UserService(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository)
+        public UserService(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository, IUserRepository userRepository,
+            IMapper mapper)
         {
             this.userManager = userManager;
             this.tokenRepository = tokenRepository;
+            this.userRepository = userRepository;
+            this.mapper = mapper;
         }
+
+        public async Task<ApiResponseDto<List<UserDto>>> GetAllAsync()
+        {
+            var users = await userRepository.GetAllFromDatabase();
+            var usersDto = mapper.Map<List<UserDto>>(users);
+            var apiResponse = new ApiResponseDto<List<UserDto>>();
+            apiResponse.IsSuccess = false;
+            apiResponse.Message = "Something Went Wrong";
+
+            if (usersDto != null)
+            {
+                apiResponse.Data = usersDto;
+                apiResponse.IsSuccess = true;
+                apiResponse.Message = "Transaction Completed Successfully";
+                return apiResponse;
+            }
+
+            return apiResponse;
+        }
+
+        public async Task<ApiResponseDto<UserDto>> GetByIdAsync(Guid id)
+        {
+            var userDto = await userRepository.GetByIdFromDatabase(id);
+            var apiResponse = new ApiResponseDto<UserDto>();
+            apiResponse.IsSuccess = false;
+            apiResponse.Message = "User Not Found";
+            if (userDto != null)
+            {
+                apiResponse.Data = userDto;
+                apiResponse.IsSuccess = true;
+                apiResponse.Message = "User Found";
+                return apiResponse;
+            }
+
+            return apiResponse;
+        }
+
         public async Task<ApiResponseDto<LoginResponseDto?>> Login(LoginRequestDto loginRequestDto)
         {
             var user = await userManager.FindByEmailAsync(loginRequestDto.Username);
@@ -47,7 +90,6 @@ namespace E_Commerce.API.Services
 
             return response;
         }
-
         public async Task<ApiResponseDto<RegisterResponseDto?>> Register(RegisterRequestDto registerRequestDto)
         {
             var identityUser = new IdentityUser

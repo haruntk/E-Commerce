@@ -45,5 +45,26 @@ namespace E_Commerce.API.Controllers
             }
             return BadRequest(response);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var response = await userService.GetAllAsync();
+            if (response.IsSuccess)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        [HttpGet]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            var response = await userService.GetByIdAsync(id);
+            if (response.IsSuccess)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }

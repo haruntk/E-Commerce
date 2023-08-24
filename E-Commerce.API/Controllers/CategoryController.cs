@@ -38,7 +38,8 @@ namespace E_Commerce.API.Controllers
             return BadRequest(response);
         }
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromBody] Guid id)
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var response = await categoryService.DeleteAsync(id);
 
