@@ -8,5 +8,6 @@ namespace E_Commerce.API.Services.Interfaces
         public Task<ApiResponseDto<LoginResponseDto?>> Login(LoginRequestDto loginRequestDto);
         public Task<ApiResponseDto<List<UserDto>>> GetAllAsync();
         public Task<ApiResponseDto<UserDto>> GetByIdAsync(Guid id);
+        public Task Logout();
     }
 }

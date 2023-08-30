@@ -10,6 +10,9 @@ using E_Commerce.API.Repositories.Interfaces;
 using E_Commerce.API.Services;
 using E_Commerce.API.Services.Interfaces;
 using E_Commerce.API.Mappings;
+using FluentValidation;
+using E_Commerce.API.Repositories.Entities;
+using E_Commerce.API.Validations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,7 +65,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
+builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
@@ -70,6 +75,7 @@ builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()
     .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>("E-Commerce")
     .AddEntityFrameworkStores<ECommerceAuthDbContext>()
+    .AddSignInManager()
     .AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(options =>
@@ -93,7 +99,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    });
+    })
+    .AddCookie();
 
 var app = builder.Build();
 

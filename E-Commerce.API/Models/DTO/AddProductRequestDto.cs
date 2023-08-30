@@ -7,6 +7,11 @@ namespace E_Commerce.API.Models.DTO
         public string Name { get; set; }
         public double Price { get; set; }
         public int Quantity { get; set; }
-        public Guid MainCategoryId { get; set; }
+        public List<AddProductCategoryDto> ProductCategories { get; set; }
+    }
+    public class AddProductCategoryDto
+    {
+        public Guid CategoryId { get; set; }
+        public bool IsMain { get; set; }
     }
 }

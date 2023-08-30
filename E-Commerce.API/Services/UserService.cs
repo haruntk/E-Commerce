@@ -9,14 +9,17 @@ namespace E_Commerce.API.Services
     public class UserService : IUserService
     {
         private readonly UserManager<IdentityUser> userManager;
+        private readonly SignInManager<IdentityUser> signInManager;
         private readonly ITokenRepository tokenRepository;
         private readonly IUserRepository userRepository;
         private readonly IMapper mapper;
 
-        public UserService(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository, IUserRepository userRepository,
+
+        public UserService(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager, ITokenRepository tokenRepository, IUserRepository userRepository,
             IMapper mapper)
         {
             this.userManager = userManager;
+            this.signInManager = signInManager;
             this.tokenRepository = tokenRepository;
             this.userRepository = userRepository;
             this.mapper = mapper;
@@ -43,7 +46,8 @@ namespace E_Commerce.API.Services
 
         public async Task<ApiResponseDto<UserDto>> GetByIdAsync(Guid id)
         {
-            var userDto = await userRepository.GetByIdFromDatabase(id);
+            var user = await userRepository.GetByIdFromDatabase(id);
+            var userDto = mapper.Map<UserDto>(user);
             var apiResponse = new ApiResponseDto<UserDto>();
             apiResponse.IsSuccess = false;
             apiResponse.Message = "User Not Found";
@@ -90,6 +94,12 @@ namespace E_Commerce.API.Services
 
             return response;
         }
+
+        public async Task Logout()
+        {
+            await signInManager.SignOutAsync();
+        }
+
         public async Task<ApiResponseDto<RegisterResponseDto?>> Register(RegisterRequestDto registerRequestDto)
         {
             var identityUser = new IdentityUser

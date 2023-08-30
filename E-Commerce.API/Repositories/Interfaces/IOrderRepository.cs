@@ -5,7 +5,7 @@ namespace E_Commerce.API.Repositories.Interfaces
 {
     public interface IOrderRepository
     {
-        public Task<OrderItem> Order(Guid productId, int quantity);
-        public Task<List<OrderDto>> GetOrdersFromDatabase(Guid id);
+        public Task<Guid> CreateAsync(OrderRequestDto orderRequestDto, string id);
+        public Task<List<Order>?> GetByIdAsync (Guid userId);
     }
 }

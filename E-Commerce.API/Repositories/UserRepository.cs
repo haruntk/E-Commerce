@@ -23,14 +23,14 @@ namespace E_Commerce.API.Repositories
             return await dbContext.Users.ToListAsync();
         }
 
-        public async Task<UserDto> GetByIdFromDatabase(Guid id)
+        public async Task<IdentityUser?> GetByIdFromDatabase(Guid id)
         {
             var existingUser = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id.ToString());
             if (existingUser == null)
             {
                 return null;
             }
-            return mapper.Map<UserDto>(existingUser);
+            return existingUser;
         }
     }
 }

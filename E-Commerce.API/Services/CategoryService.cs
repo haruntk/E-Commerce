@@ -18,56 +18,62 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<List<CategoryDto>>> GetAllAsync()
         {
-            var categories = await categoryRepository.GetAllAsyncFromDatabase();
+            var categories = await categoryRepository.GetAllAsync();
             var categoriesDto = mapper.Map<List<CategoryDto>>(categories);
-            var apiResponse = new ApiResponseDto<List<CategoryDto>>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Something Went Wrong";
 
-            if (categoriesDto != null)
+            if (categoriesDto == null)
             {
-                apiResponse.Data = categoriesDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Transaction Completed Successfully";
-                return apiResponse;
+                return new ApiResponseDto<List<CategoryDto>>
+                {
+                    IsSuccess = false,
+                    Message = "Operation Failed"
+                };
             }
-
-            return apiResponse;
+            return new ApiResponseDto<List<CategoryDto>>
+            {
+                Data = categoriesDto,
+                IsSuccess = true,
+                Message = "Transaction Completed Successfully"
+            };
         }
         public async Task<ApiResponseDto<CategoryDto>> AddAsync(AddCategoryRequestDto addCategoryRequestDto)
         {
-            var categoryDto = await categoryRepository.CreateAsyncToDatabase(addCategoryRequestDto);
-
-            var apiResponse = new ApiResponseDto<CategoryDto>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Something Went Wrong";
-            if (categoryDto != null)
+            var category = await categoryRepository.CreateAsync(addCategoryRequestDto);
+            var categoryDto = mapper.Map<CategoryDto>(category);
+            if (categoryDto == null)
             {
-                apiResponse.Data = categoryDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Transaction Completed Successfully";
-                return apiResponse;
+                return new ApiResponseDto<CategoryDto>
+                {
+                    IsSuccess = false,
+                    Message = "Category could not be added"
+                };
             }
-            return apiResponse;
+            return new ApiResponseDto<CategoryDto>
+            {
+                Data = categoryDto,
+                IsSuccess = true,
+                Message = "Transaction Completed Successfully"
+            };
         }
         public async Task<ApiResponseDto<CategoryDto>> DeleteAsync(Guid id)
         {
-            var deletedCategory = await categoryRepository.DeleteAsyncFromDatabase(id);
-
+            var deletedCategory = await categoryRepository.DeleteAsync(id);
             var deletedCategoryDto = mapper.Map<CategoryDto>(deletedCategory);
 
-            var apiResponse = new ApiResponseDto<CategoryDto>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Category Not Found!";
-            if (deletedCategoryDto != null)
+            if (deletedCategoryDto == null)
             {
-                apiResponse.Data = deletedCategoryDto;
-                apiResponse.IsSuccess =true;
-                apiResponse.Message = "Category Deleted Successfully";
-                return apiResponse;
+                return new ApiResponseDto<CategoryDto>
+                {
+                    IsSuccess = false,
+                    Message = "Category Not Found"
+                };
             }
-            return apiResponse;
-
+            return new ApiResponseDto<CategoryDto>
+            {
+                Data = deletedCategoryDto,
+                IsSuccess = true,
+                Message = "Category Deleted Successfully"
+            };
         }
     }
 }

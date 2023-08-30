@@ -66,5 +66,12 @@ namespace E_Commerce.API.Controllers
             }
             return BadRequest(response);
         }
+        [HttpDelete]
+        [Route("Logout")]
+        public async Task<IActionResult> Logout()
+        {
+           await userService.Logout();
+           return Ok();
+        }
     }
 }

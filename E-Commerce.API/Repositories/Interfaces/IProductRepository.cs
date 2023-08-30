@@ -5,10 +5,10 @@ namespace E_Commerce.API.Repositories.Interfaces
 {
     public interface IProductRepository
     {
-        public Task<ProductDto> CreateAsyncToDatabase(AddProductRequestDto addProductRequest);
-        public Task<Product?> DeleteAsyncFromDatabase(Guid id);
-        public Task<ProductDto?> UpdateByIdToDatabase(Guid id, UpdateProductRequestDto updateProductRequestDto);
-        public Task<List<Product>> GetAllFromDatabase();
-        public Task<ProductDto> GetByIdFromDatabase(Guid id);
+        public Task<Guid> CreateAsync(AddProductRequestDto addProductRequest);
+        public Task<Product?> DeleteAsync(Guid id);
+        public Task<Product?> UpdateByIdAsync(Guid id, UpdateProductRequestDto updateProductRequestDto);
+        public Task<List<Product>> GetAllAsync();
+        public Task<Product> GetByIdAsync(Guid id);
     }
 }

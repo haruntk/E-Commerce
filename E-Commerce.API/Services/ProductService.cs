@@ -2,8 +2,10 @@
 using AutoMapper.Internal;
 using E_Commerce.API.Models.DTO;
 using E_Commerce.API.Repositories;
+using E_Commerce.API.Repositories.Entities;
 using E_Commerce.API.Repositories.Interfaces;
 using E_Commerce.API.Services.Interfaces;
+using E_Commerce.API.Validations;
 
 namespace E_Commerce.API.Services
 {
@@ -11,96 +13,140 @@ namespace E_Commerce.API.Services
     {
         private readonly IMapper mapper;
         private readonly IProductRepository productRepository;
-        public ProductService(IMapper mapper, IProductRepository productRepository)
+        private readonly IProductCategoryRepository productCategoryRepository;
+
+        public ProductService(IMapper mapper, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository)
         {
             this.mapper = mapper;
             this.productRepository = productRepository;
+            this.productCategoryRepository = productCategoryRepository;
         }
 
-        public async Task<ApiResponseDto<ProductDto>> AddAsync(AddProductRequestDto addProductRequestDto)
+        public async Task<ApiResponseDto<Guid>> AddAsync(AddProductRequestDto addProductRequestDto)
         {
-            var productDto = await productRepository.CreateAsyncToDatabase(addProductRequestDto);
-            var apiResponse = new ApiResponseDto<ProductDto>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Something Went Wrong";
-            if (productDto != null)
+            var validator = new ProductCategoryValidator();
+            var result = await validator.ValidateAsync(addProductRequestDto);
+            if (result.IsValid)
             {
-                apiResponse.Data = productDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Transaction Completed Successfully";
-                return apiResponse;
+                var productId = await productRepository.CreateAsync(addProductRequestDto);
+                var productCateogoryEntities = GetProductCategoryEntities(productId, addProductRequestDto.ProductCategories);
+                var affectedRowCount = await productCategoryRepository.Create(productCateogoryEntities);
+                if (affectedRowCount == 0)
+                {
+                    return new ApiResponseDto<Guid>()
+                    {
+                        IsSuccess = false,
+                        Message = "The product could not be added."
+                    };
+                }
+                return new ApiResponseDto<Guid>()
+                {
+                    Data = productId,
+                    IsSuccess = true,
+                    Message = "Transaction Completed Successfully"
+                };
             }
-            return apiResponse;
+            return new ApiResponseDto<Guid>
+            {
+                IsSuccess = false,
+                Message = "The entered informations are not correct."
+            };
         }
 
+        private List<ProductCategory> GetProductCategoryEntities(Guid productId, List<AddProductCategoryDto> dto)
+        {
+            var productCategories = new List<ProductCategory>();
+            foreach (var productCategoryDto in dto)
+            {
+                productCategories.Add(new ProductCategory
+                {
+                    Id = Guid.NewGuid(),
+                    CategoryId = productCategoryDto.CategoryId,
+                    ProductId = productId,
+                    IsMain = productCategoryDto.IsMain
+                });
+            }
+            return productCategories;
+        }
         public async Task<ApiResponseDto<ProductDto>> DeleteAsync(Guid id)
         {
-            var deletedProduct = await productRepository.DeleteAsyncFromDatabase(id);
+            var deletedProduct = await productRepository.DeleteAsync(id);
 
             var deletedProductDto = mapper.Map<ProductDto>(deletedProduct);
-
-            var apiResponse = new ApiResponseDto<ProductDto>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Product Not Found!";
-            if (deletedProductDto != null)
+            if (deletedProductDto == null)
             {
-                apiResponse.Data = deletedProductDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Product Deleted Successfully";
-                return apiResponse;
+                return new ApiResponseDto<ProductDto>()
+                {
+                    IsSuccess = false,
+                    Message = "Operation Failed"
+                };
             }
-            return apiResponse;
+            return new ApiResponseDto<ProductDto>
+            {
+                Data = deletedProductDto,
+                IsSuccess = true,
+                Message = "Product Deleted Successfully"
+            };
         }
 
         public async Task<ApiResponseDto<List<ProductDto>>> GetAllAsync()
         {
-            var products = await productRepository.GetAllFromDatabase();
+            var products = await productRepository.GetAllAsync();
             var productsDto = mapper.Map<List<ProductDto>>(products);
-            var apiResponse = new ApiResponseDto<List<ProductDto>>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Something Went Wrong";
-
-            if (productsDto != null)
+            if (productsDto == null)
             {
-                apiResponse.Data = productsDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Transaction Completed Successfully";
-                return apiResponse;
+                return new ApiResponseDto<List<ProductDto>>
+                {
+                    IsSuccess = false,
+                    Message = "Operation Failed"
+                };
             }
-
-            return apiResponse;
+            return new ApiResponseDto<List<ProductDto>>
+            {
+                Data = productsDto,
+                IsSuccess = true,
+                Message = "Transaction Completed Successfully"
+            };
         }
 
         public async Task<ApiResponseDto<ProductDto>> GetByIdAsync(Guid id)
         {
-            var productDto = await productRepository.GetByIdFromDatabase(id);
-            var apiResponse = new ApiResponseDto<ProductDto>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Product Not Found";
-            if (productDto != null)
+            var product = await productRepository.GetByIdAsync(id);
+            var productDto = mapper.Map<ProductDto>(product);
+            if (productDto == null)
             {
-                apiResponse.Data = productDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Product Found Successfully";
-                return apiResponse;
+                return new ApiResponseDto<ProductDto>
+                {
+                    IsSuccess = false,
+                    Message = "Product Not Found"
+                };
             }
-            return apiResponse;
+            return new ApiResponseDto<ProductDto>
+            {
+                Data = productDto,
+                IsSuccess = true,
+                Message = "Product Found Successfully"
+            };
         }
 
         public async Task<ApiResponseDto<ProductDto>> UpdateAsync(Guid id, UpdateProductRequestDto updateProductRequestDto)
         {
-            var productDto = await productRepository.UpdateByIdToDatabase(id, updateProductRequestDto);
-            var apiResponse = new ApiResponseDto<ProductDto>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Product Not Found";
-            if (productDto != null)
+            var product = await productRepository.UpdateByIdAsync(id, updateProductRequestDto);
+            var productDto = mapper.Map<ProductDto>(product);
+            if (productDto == null)
             {
-                apiResponse.Data = productDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Product Updated Successfully";
-                return apiResponse;
+                return new ApiResponseDto<ProductDto>
+                {
+                    IsSuccess = false,
+                    Message = "Product Not Found"
+                };
             }
-            return apiResponse;
+            return new ApiResponseDto<ProductDto>
+            {
+                Data = productDto,
+                IsSuccess = true,
+                Message = "Product Updated Successfully"
+            };
         }
     }
 }
