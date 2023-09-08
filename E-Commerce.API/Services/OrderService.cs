@@ -20,13 +20,12 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<Guid>> CreateAsync(OrderRequestDto orderRequestDto, string id)
         {
-            var products = await productRepository.GetAllAsync();
             var orderItems = mapper.Map<List<OrderItem>>(orderRequestDto);
             var orderId = Guid.NewGuid();
             double totalPrice = 0;
             foreach (var item in orderItems)
             {
-                var product = products.FirstOrDefault(x => x.Id == item.ProductId);
+                var product = await productRepository.GetByIdAsync(item.ProductId);
                 if (product == null || product.Quantity < item.Quantity || item.Quantity == 0)
                 {
                     return new ApiResponseDto<Guid>
