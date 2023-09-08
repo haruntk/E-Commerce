@@ -18,19 +18,19 @@ namespace E_Commerce.API.Repositories
             this.dbContext = dbContext;
             this.mapper = mapper;
         }
-        public async Task<List<IdentityUser>> GetAllFromDatabase()
+        public async Task<List<IdentityUser>> GetAllAsync()
         {
             return await dbContext.Users.ToListAsync();
         }
 
-        public async Task<IdentityUser?> GetByIdFromDatabase(Guid id)
+        public async Task<IdentityUser?> GetByIdAsync(Guid id)
         {
-            var existingUser = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id.ToString());
-            if (existingUser == null)
+            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id.ToString());
+            if (user == null)
             {
                 return null;
             }
-            return existingUser;
+            return user;
         }
     }
 }

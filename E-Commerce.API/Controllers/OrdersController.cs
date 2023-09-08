@@ -16,7 +16,7 @@ namespace E_Commerce.API.Controllers
         {
             this.orderService = orderService;
         }
-        [HttpPut]
+        [HttpPost]
         [Route("Order")]
         public async Task<IActionResult> Create([FromBody] OrderRequestDto orderRequest)
         {

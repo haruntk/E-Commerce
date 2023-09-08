@@ -18,10 +18,8 @@ namespace E_Commerce.API.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<Category> CreateAsync(AddCategoryRequestDto addCategoryRequestDto)
+        public async Task<Category> CreateAsync(Category category)
         {
-            var category = mapper.Map<Category>(addCategoryRequestDto);
-            category.Id = Guid.NewGuid();
             await dbContext.Categories.AddAsync(category);
             await dbContext.SaveChangesAsync();
             return category;
@@ -31,16 +29,15 @@ namespace E_Commerce.API.Repositories
         {
             return await dbContext.Categories.ToListAsync();
         }
-        public async Task<Category?> DeleteAsync(Guid id)
+        public async void DeleteAsync(Category category)
         {
-            var existingCategory = await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == id);
-            if (existingCategory == null)
-            {
-                return null;
-            }
-            dbContext.Remove(existingCategory);
+            dbContext.Categories.Remove(category);
             await dbContext.SaveChangesAsync();
-            return existingCategory;
+        }
+
+        public async Task<Category?> GetByIdAsync(Guid id)
+        {
+            return await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == id);
         }
     }
 }

@@ -18,34 +18,22 @@ namespace E_Commerce.API.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<Guid> CreateAsync(AddProductRequestDto addProductRequest)
+        public async void CreateAsync(Product product)
         {
-            var mainCategoryId = Guid.Empty;
-            foreach (var item in addProductRequest.ProductCategories)
-            {
-                if (item.IsMain)
-                {
-                    mainCategoryId = item.CategoryId;
-                }
-            }
-            var product = mapper.Map<Product>(addProductRequest);
-            product.Id = Guid.NewGuid();
-            product.MainCategoryId = mainCategoryId;
             await dbContext.Products.AddAsync(product);
             await dbContext.SaveChangesAsync();
-            return product.Id;
         }
 
         public async Task<Product?> DeleteAsync(Guid id)
         {
-            var existingProduct = await dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
-            if (existingProduct == null)
+            var product = await dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
+            if (product == null)
             {
                 return null;
             }
-            dbContext.Remove(existingProduct);
+            dbContext.Remove(product);
             await dbContext.SaveChangesAsync();
-            return existingProduct;
+            return product;
         }
 
         public async Task<List<Product>> GetAllAsync()
@@ -55,27 +43,13 @@ namespace E_Commerce.API.Repositories
 
         public async Task<Product?> GetByIdAsync(Guid id)
         {
-            var existingProduct = dbContext.Products.FirstOrDefault(x => x.Id == id);
-            if (existingProduct == null)
-            {
-                return null;
-            }
-            return existingProduct;
+            var product = dbContext.Products.FirstOrDefault(x => x.Id == id);
+            return product;
         }
 
-        public async Task<Product?> UpdateByIdAsync(Guid id, UpdateProductRequestDto updateProductRequestDto)
+        public async void UpdateByIdAsync(Product product)
         {
-            var existingProduct = dbContext.Products.FirstOrDefault(x => x.Id == id);
-            if (existingProduct == null)
-            {
-                return null;
-            }
-            existingProduct.Quantity = updateProductRequestDto.Quantity;
-            existingProduct.Price = updateProductRequestDto.Price;
-            existingProduct.MainCategoryId = updateProductRequestDto.MainCategoryId;
-            existingProduct.Name = updateProductRequestDto.Name;
             await dbContext.SaveChangesAsync();
-            return existingProduct;
         }
     }
 }

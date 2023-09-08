@@ -28,8 +28,22 @@ namespace E_Commerce.API.Services
             var result = await validator.ValidateAsync(addProductRequestDto);
             if (result.IsValid)
             {
-                var productId = await productRepository.CreateAsync(addProductRequestDto);
-                var productCateogoryEntities = GetProductCategoryEntities(productId, addProductRequestDto.ProductCategories);
+                var product = new Product()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = addProductRequestDto.Name,
+                    Price = addProductRequestDto.Price,
+                    Quantity = addProductRequestDto.Quantity,
+                };
+                foreach (var item in addProductRequestDto.ProductCategories)
+                {
+                    if (item.IsMain)
+                    {
+                        product.MainCategoryId = item.CategoryId;
+                    }
+                }
+                productRepository.CreateAsync(product);
+                var productCateogoryEntities = GetProductCategoryEntities(product.Id, addProductRequestDto.ProductCategories);
                 var affectedRowCount = await productCategoryRepository.Create(productCateogoryEntities);
                 if (affectedRowCount == 0)
                 {
@@ -41,7 +55,7 @@ namespace E_Commerce.API.Services
                 }
                 return new ApiResponseDto<Guid>()
                 {
-                    Data = productId,
+                    Data = product.Id,
                     IsSuccess = true,
                     Message = "Transaction Completed Successfully"
                 };
@@ -97,8 +111,9 @@ namespace E_Commerce.API.Services
             {
                 return new ApiResponseDto<List<ProductDto>>
                 {
+                    Data = productsDto,
                     IsSuccess = false,
-                    Message = "Operation Failed"
+                    Message = "No products were found in the database"
                 };
             }
             return new ApiResponseDto<List<ProductDto>>
@@ -131,9 +146,8 @@ namespace E_Commerce.API.Services
 
         public async Task<ApiResponseDto<ProductDto>> UpdateAsync(Guid id, UpdateProductRequestDto updateProductRequestDto)
         {
-            var product = await productRepository.UpdateByIdAsync(id, updateProductRequestDto);
-            var productDto = mapper.Map<ProductDto>(product);
-            if (productDto == null)
+            var product = await productRepository.GetByIdAsync(id);
+            if (product == null)
             {
                 return new ApiResponseDto<ProductDto>
                 {
@@ -141,6 +155,13 @@ namespace E_Commerce.API.Services
                     Message = "Product Not Found"
                 };
             }
+            product.Quantity = updateProductRequestDto.Quantity;
+            product.Price = updateProductRequestDto.Price;
+            product.MainCategoryId = updateProductRequestDto.MainCategoryId;
+            product.Name = updateProductRequestDto.Name;
+
+            productRepository.UpdateByIdAsync(product);
+            var productDto = mapper.Map<ProductDto>(product);
             return new ApiResponseDto<ProductDto>
             {
                 Data = productDto,

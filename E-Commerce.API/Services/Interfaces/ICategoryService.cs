@@ -7,6 +7,6 @@ namespace E_Commerce.API.Services.Interfaces
     {
         public Task<ApiResponseDto<List<CategoryDto>>> GetAllAsync();
         public Task<ApiResponseDto<CategoryDto>> AddAsync(AddCategoryRequestDto addCategoryRequestDto);
-        public Task<ApiResponseDto<CategoryDto>> DeleteAsync(Guid id);
+        public Task<ApiResponseDto<CategoryDto?>> DeleteAsync(Guid id);
     }
 }

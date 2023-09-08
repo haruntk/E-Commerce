@@ -27,7 +27,7 @@ namespace E_Commerce.API.Services
 
         public async Task<ApiResponseDto<List<UserDto>>> GetAllAsync()
         {
-            var users = await userRepository.GetAllFromDatabase();
+            var users = await userRepository.GetAllAsync();
             var usersDto = mapper.Map<List<UserDto>>(users);
             var apiResponse = new ApiResponseDto<List<UserDto>>();
             apiResponse.IsSuccess = false;
@@ -46,7 +46,7 @@ namespace E_Commerce.API.Services
 
         public async Task<ApiResponseDto<UserDto>> GetByIdAsync(Guid id)
         {
-            var user = await userRepository.GetByIdFromDatabase(id);
+            var user = await userRepository.GetByIdAsync(id);
             var userDto = mapper.Map<UserDto>(user);
             var apiResponse = new ApiResponseDto<UserDto>();
             apiResponse.IsSuccess = false;

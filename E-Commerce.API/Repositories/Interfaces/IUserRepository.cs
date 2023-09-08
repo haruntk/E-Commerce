@@ -5,7 +5,7 @@ namespace E_Commerce.API.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        public Task<List<IdentityUser>> GetAllFromDatabase();
-        public Task<IdentityUser?> GetByIdFromDatabase(Guid id);
+        public Task<List<IdentityUser>> GetAllAsync();
+        public Task<IdentityUser?> GetByIdAsync(Guid id);
     }
 }

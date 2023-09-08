@@ -38,7 +38,9 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<CategoryDto>> AddAsync(AddCategoryRequestDto addCategoryRequestDto)
         {
-            var category = await categoryRepository.CreateAsync(addCategoryRequestDto);
+            var category = mapper.Map<Category>(addCategoryRequestDto);
+            category.Id = Guid.NewGuid();
+            await categoryRepository.CreateAsync(category);
             var categoryDto = mapper.Map<CategoryDto>(category);
             if (categoryDto == null)
             {
@@ -55,20 +57,21 @@ namespace E_Commerce.API.Services
                 Message = "Transaction Completed Successfully"
             };
         }
-        public async Task<ApiResponseDto<CategoryDto>> DeleteAsync(Guid id)
+        public async Task<ApiResponseDto<CategoryDto?>> DeleteAsync(Guid id)
         {
-            var deletedCategory = await categoryRepository.DeleteAsync(id);
+            var deletedCategory = await categoryRepository.GetByIdAsync(id);
             var deletedCategoryDto = mapper.Map<CategoryDto>(deletedCategory);
 
-            if (deletedCategoryDto == null)
+            if (deletedCategory == null)
             {
-                return new ApiResponseDto<CategoryDto>
+                return new ApiResponseDto<CategoryDto?>
                 {
                     IsSuccess = false,
                     Message = "Category Not Found"
                 };
             }
-            return new ApiResponseDto<CategoryDto>
+            categoryRepository.DeleteAsync(deletedCategory);
+            return new ApiResponseDto<CategoryDto?>
             {
                 Data = deletedCategoryDto,
                 IsSuccess = true,
