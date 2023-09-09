@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Azure;
 using E_Commerce.API.Models.DTO;
 using E_Commerce.API.Repositories.Interfaces;
 using E_Commerce.API.Services.Interfaces;
+using E_Commerce.API.Validations;
 using Microsoft.AspNetCore.Identity;
 
 namespace E_Commerce.API.Services
@@ -15,7 +17,7 @@ namespace E_Commerce.API.Services
         private readonly IMapper mapper;
 
 
-        public UserService(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager, ITokenRepository tokenRepository, IUserRepository userRepository,
+        public UserService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ITokenRepository tokenRepository, IUserRepository userRepository,
             IMapper mapper)
         {
             this.userManager = userManager;
@@ -29,70 +31,77 @@ namespace E_Commerce.API.Services
         {
             var users = await userRepository.GetAllAsync();
             var usersDto = mapper.Map<List<UserDto>>(users);
-            var apiResponse = new ApiResponseDto<List<UserDto>>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "Something Went Wrong";
-
             if (usersDto != null)
             {
-                apiResponse.Data = usersDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "Transaction Completed Successfully";
-                return apiResponse;
+                return new ApiResponseDto<List<UserDto>>
+                {
+                    Data = usersDto,
+                    IsSuccess = true,
+                    Message = "Transaction Completed Successfully"
+                };
             }
-
-            return apiResponse;
+            return new ApiResponseDto<List<UserDto>>
+            {
+                IsSuccess = false,
+                Message = "Something Went Wrong"
+            };
         }
 
         public async Task<ApiResponseDto<UserDto>> GetByIdAsync(Guid id)
         {
             var user = await userRepository.GetByIdAsync(id);
             var userDto = mapper.Map<UserDto>(user);
-            var apiResponse = new ApiResponseDto<UserDto>();
-            apiResponse.IsSuccess = false;
-            apiResponse.Message = "User Not Found";
+
             if (userDto != null)
             {
-                apiResponse.Data = userDto;
-                apiResponse.IsSuccess = true;
-                apiResponse.Message = "User Found";
-                return apiResponse;
+                return new ApiResponseDto<UserDto>
+                {
+                    Data = userDto,
+                    IsSuccess = true,
+                    Message = "User Found"
+                };
             }
 
-            return apiResponse;
+            return new ApiResponseDto<UserDto>
+            {
+                IsSuccess = false,
+                Message = "User Not Found"
+            };
         }
 
         public async Task<ApiResponseDto<LoginResponseDto?>> Login(LoginRequestDto loginRequestDto)
         {
             var user = await userManager.FindByEmailAsync(loginRequestDto.Username);
-
-            var response = new ApiResponseDto<LoginResponseDto>();
-
-            if (user != null)
+            var validator = new LoginValidator();
+            var result = await validator.ValidateAsync(loginRequestDto);
+            if (result.IsValid)
             {
-                var checkPasswordResult = await userManager.CheckPasswordAsync(user, loginRequestDto.Password);
-
-                if (checkPasswordResult)
+                if (user != null)
                 {
-                    var roles = await userManager.GetRolesAsync(user);
+                    var checkPasswordResult = await userManager.CheckPasswordAsync(user, loginRequestDto.Password);
 
-                    if (roles != null)
+                    if (checkPasswordResult)
                     {
-                        var jwtToken = tokenRepository.CreateJWTToken(user, roles.ToList());
+                        var roles = await userManager.GetRolesAsync(user);
 
-                        response.Data = new LoginResponseDto { JwtToken = jwtToken };
-
-                        response.IsSuccess = true;
-                        response.Message = "Login successful!";
-
-                        return response;
+                        if (roles != null)
+                        {
+                            var jwtToken = tokenRepository.CreateJWTToken(user, roles.ToList());
+                            return new ApiResponseDto<LoginResponseDto?>
+                            {
+                                Data = new LoginResponseDto { JwtToken = jwtToken },
+                                IsSuccess = true,
+                                Message = "Login successful"
+                            };
+                        }
                     }
                 }
             }
-            response.IsSuccess = false;
-            response.Message = "Username or Password Incorrect!";
-
-            return response;
+            return new ApiResponseDto<LoginResponseDto?>
+            {
+                IsSuccess = false,
+                Message = result.Errors.FirstOrDefault(x=> true).ToString()
+            };
         }
 
         public async Task Logout()
@@ -102,39 +111,45 @@ namespace E_Commerce.API.Services
 
         public async Task<ApiResponseDto<RegisterResponseDto?>> Register(RegisterRequestDto registerRequestDto)
         {
-            var identityUser = new IdentityUser
+            var validator = new RegisterValidator();
+            var result = await validator.ValidateAsync(registerRequestDto);
+            if (result.IsValid)
             {
-                UserName = registerRequestDto.Username,
-                Email = registerRequestDto.Username
-            };
-            var registerResponse = new ApiResponseDto<RegisterResponseDto>();
-
-            var identityResult = await userManager.CreateAsync(identityUser, registerRequestDto.Password);
-
-            if (identityResult.Succeeded)
-            {
-                if (registerRequestDto.Roles != null && registerRequestDto.Roles.Any())
+                var identityUser = new IdentityUser
                 {
-                    identityResult = await userManager.AddToRolesAsync(identityUser, registerRequestDto.Roles);
+                    UserName = registerRequestDto.Username,
+                    Email = registerRequestDto.Username
+                };
 
-                    if (identityResult.Succeeded)
+                var identityResult = await userManager.CreateAsync(identityUser, registerRequestDto.Password);
+
+                if (identityResult.Succeeded)
+                {
+                    if (registerRequestDto.Roles != null && registerRequestDto.Roles.Any())
                     {
-                        registerResponse.Data = new RegisterResponseDto
-                        {
-                            UserName = registerRequestDto.Username,
-                            Password = registerRequestDto.Password
-                        };
+                        identityResult = await userManager.AddToRolesAsync(identityUser, registerRequestDto.Roles);
 
-                        registerResponse.IsSuccess = true;
-                        registerResponse.Message = "Registered! Please Login!";
-                        return registerResponse;
+                        if (identityResult.Succeeded)
+                        {
+                            return new ApiResponseDto<RegisterResponseDto?>
+                            {
+                                Data = new RegisterResponseDto
+                                {
+                                    UserName = registerRequestDto.Username,
+                                    Password = registerRequestDto.Password
+                                },
+                                IsSuccess = true,
+                                Message = "Registered! Please Login!"
+                            };
+                        }
                     }
                 }
             }
-            registerResponse.IsSuccess = false;
-            registerResponse.Message = "Register Failed!";
-
-            return registerResponse;
+            return new ApiResponseDto<RegisterResponseDto?>
+            {
+                IsSuccess = false,
+                Message = result.Errors.FirstOrDefault(x => true).ToString()
+            };
         }
     }
 }

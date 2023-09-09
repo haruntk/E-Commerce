@@ -26,10 +26,6 @@ namespace E_Commerce.API.Repositories
         public async Task<IdentityUser?> GetByIdAsync(Guid id)
         {
             var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id.ToString());
-            if (user == null)
-            {
-                return null;
-            }
             return user;
         }
     }
