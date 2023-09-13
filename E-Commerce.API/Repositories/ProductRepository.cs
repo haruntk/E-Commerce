@@ -17,6 +17,10 @@ namespace E_Commerce.API.Repositories
             this.dbContext = dbContext;
             this.mapper = mapper;
         }
+        public async Task<List<Product>> GetListByIdsAsync(List<Guid> ids)
+        {
+            return await dbContext.Products.Where(x=> ids.Contains(x.Id)).ToListAsync();
+        }
 
         public async void CreateAsync(Product product)
         {

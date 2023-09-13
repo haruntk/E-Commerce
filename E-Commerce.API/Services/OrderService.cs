@@ -23,10 +23,12 @@ namespace E_Commerce.API.Services
             var orderItems = mapper.Map<List<OrderItem>>(orderRequestDto);
             var orderId = Guid.NewGuid();
             double totalPrice = 0;
+            var productIds = orderRequestDto.OrderItems.Select(x => x.ProductId).ToList();
+            var products = await productRepository.GetListByIdsAsync(productIds);
             foreach (var item in orderItems)
             {
-                var product = await productRepository.GetByIdAsync(item.ProductId);
-                if (product == null || product.Quantity < item.Quantity || item.Quantity == 0)
+                var product = products.FirstOrDefault(x => x.Id == item.ProductId);
+                if (product == null || product.Stock < item.Quantity || item.Quantity == 0)
                 {
                     return new ApiResponseDto<Guid>
                     {
@@ -35,11 +37,11 @@ namespace E_Commerce.API.Services
                         Message = "Product Does Not Exist OR Out Of Stock"
                     };
                 }
-                item.UnitPrice = product.Price * item.Quantity;
+                item.UnitPrice = product.Price;
                 item.OrderId = orderId;
                 item.Id = Guid.NewGuid();
-                totalPrice += item.UnitPrice;
-                product.Quantity -= item.Quantity;
+                totalPrice += item.UnitPrice * item.Quantity;
+                product.Stock -= item.Quantity;
             }
             var order = new Order
             {

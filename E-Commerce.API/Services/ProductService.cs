@@ -21,7 +21,6 @@ namespace E_Commerce.API.Services
             this.productRepository = productRepository;
             this.productCategoryRepository = productCategoryRepository;
         }
-
         public async Task<ApiResponseDto<Guid>> AddAsync(AddProductRequestDto addProductRequestDto)
         {
             var validator = new ProductCategoryValidator();
@@ -33,7 +32,7 @@ namespace E_Commerce.API.Services
                     Id = Guid.NewGuid(),
                     Name = addProductRequestDto.Name,
                     Price = addProductRequestDto.Price,
-                    Quantity = addProductRequestDto.Quantity,
+                    Stock = addProductRequestDto.Stock,
                 };
                 foreach (var item in addProductRequestDto.ProductCategories)
                 {
@@ -155,7 +154,7 @@ namespace E_Commerce.API.Services
                     Message = "Product Not Found"
                 };
             }
-            product.Quantity = updateProductRequestDto.Quantity;
+            product.Stock = updateProductRequestDto.Stock;
             product.Price = updateProductRequestDto.Price;
             product.MainCategoryId = updateProductRequestDto.MainCategoryId;
             product.Name = updateProductRequestDto.Name;
