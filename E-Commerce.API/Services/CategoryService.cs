@@ -18,6 +18,7 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<List<CategoryDto>>> GetAllAsync()
         {
+            // categoriesByCache = _cache.Get("CategoriesKey")
             var categories = await categoryRepository.GetAllAsync();
             var categoriesDto = mapper.Map<List<CategoryDto>>(categories);
 
@@ -29,6 +30,8 @@ namespace E_Commerce.API.Services
                     Message = "Operation Failed"
                 };
             }
+            
+            // cache set 
             return new ApiResponseDto<List<CategoryDto>>
             {
                 Data = categoriesDto,

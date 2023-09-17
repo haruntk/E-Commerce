@@ -42,8 +42,8 @@ namespace E_Commerce.API.Services
                     }
                 }
                 productRepository.CreateAsync(product);
-                var productCateogoryEntities = GetProductCategoryEntities(product.Id, addProductRequestDto.ProductCategories);
-                var affectedRowCount = await productCategoryRepository.Create(productCateogoryEntities);
+                var productCategoryEntities = GetProductCategoryEntities(product.Id, addProductRequestDto.ProductCategories);
+                var affectedRowCount = await productCategoryRepository.Create(productCategoryEntities);
                 if (affectedRowCount == 0)
                 {
                     return new ApiResponseDto<Guid>()

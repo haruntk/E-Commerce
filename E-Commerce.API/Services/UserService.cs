@@ -74,33 +74,49 @@ namespace E_Commerce.API.Services
             var user = await userManager.FindByEmailAsync(loginRequestDto.Username);
             var validator = new LoginValidator();
             var result = await validator.ValidateAsync(loginRequestDto);
-            if (result.IsValid)
+            if (!result.IsValid)
             {
-                if (user != null)
+                return new ApiResponseDto<LoginResponseDto?>
                 {
-                    var checkPasswordResult = await userManager.CheckPasswordAsync(user, loginRequestDto.Password);
-
-                    if (checkPasswordResult)
-                    {
-                        var roles = await userManager.GetRolesAsync(user);
-
-                        if (roles != null)
-                        {
-                            var jwtToken = tokenRepository.CreateJWTToken(user, roles.ToList());
-                            return new ApiResponseDto<LoginResponseDto?>
-                            {
-                                Data = new LoginResponseDto { JwtToken = jwtToken },
-                                IsSuccess = true,
-                                Message = "Login successful"
-                            };
-                        }
-                    }
-                }
+                    IsSuccess = false,
+                    Message = result.Errors.FirstOrDefault(x=> true).ToString()
+                };
             }
+            if (user == null)
+            {
+                return new ApiResponseDto<LoginResponseDto?>
+                {
+                    IsSuccess = false,
+                    Message = result.Errors.FirstOrDefault(x=> true).ToString()
+                };
+            }
+            
+            var checkPasswordResultSuccess = await userManager.CheckPasswordAsync(user, loginRequestDto.Password);
+
+            if (!checkPasswordResultSuccess)
+            {
+                return new ApiResponseDto<LoginResponseDto?>
+                {
+                    IsSuccess = false,
+                    Message = result.Errors.FirstOrDefault(x=> true).ToString()
+                };
+            }
+            var roles = await userManager.GetRolesAsync(user);
+            if (roles == null)
+            {
+                return new ApiResponseDto<LoginResponseDto?>
+                {
+                    IsSuccess = false,
+                    Message = result.Errors.FirstOrDefault(x => true).ToString()
+                };
+            }
+
+            var jwtToken = tokenRepository.CreateJWTToken(user, roles.ToList());
             return new ApiResponseDto<LoginResponseDto?>
             {
-                IsSuccess = false,
-                Message = result.Errors.FirstOrDefault(x=> true).ToString()
+                Data = new LoginResponseDto { JwtToken = jwtToken },
+                IsSuccess = true,
+                Message = "Login successful"
             };
         }
 
