@@ -13,6 +13,7 @@ using E_Commerce.API.Mappings;
 using FluentValidation;
 using E_Commerce.API.Repositories.Entities;
 using E_Commerce.API.Validations;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,10 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("ECommerceConnect
 builder.Services.AddDbContext<ECommerceAuthDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("ECommerceAuthConnectionString")));
 
+builder.Services.AddStackExchangeRedisCache(options =>
+options.Configuration = builder.Configuration.GetConnectionString("Redis"));
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<IUserService, UserService>();

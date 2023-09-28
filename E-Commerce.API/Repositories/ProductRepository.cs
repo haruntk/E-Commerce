@@ -40,9 +40,9 @@ namespace E_Commerce.API.Repositories
             return product;
         }
 
-        public async Task<List<Product>> GetAllAsync()
+        public async Task<List<Product>> GetAllAsync(int skip, int limit)
         {
-            return await dbContext.Products.ToListAsync();
+            return await dbContext.Products.AsQueryable().Skip(skip).Take(limit).ToListAsync();
         }
 
         public async Task<Product?> GetByIdAsync(Guid id)

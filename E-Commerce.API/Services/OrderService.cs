@@ -3,6 +3,10 @@ using E_Commerce.API.Models.DTO;
 using E_Commerce.API.Repositories.Entities;
 using E_Commerce.API.Repositories.Interfaces;
 using E_Commerce.API.Services.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace E_Commerce.API.Services
 {
@@ -11,12 +15,15 @@ namespace E_Commerce.API.Services
         private readonly IOrderRepository orderRepository;
         private readonly IMapper mapper;
         private readonly IProductRepository productRepository;
+        private readonly IDistributedCache distributedCache;
 
-        public OrderService(IOrderRepository orderRepository, IMapper mapper, IProductRepository productRepository)
+        public OrderService(IOrderRepository orderRepository, IMapper mapper, IProductRepository productRepository, 
+            IDistributedCache distributedCache)
         {
             this.orderRepository = orderRepository;
             this.mapper = mapper;
             this.productRepository = productRepository;
+            this.distributedCache = distributedCache;
         }
         public async Task<ApiResponseDto<Guid>> CreateAsync(OrderRequestDto orderRequestDto, string id)
         {
@@ -69,21 +76,39 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<List<OrderDto>>> GetByIdAsync(Guid userId)
         {
-            var orders = await orderRepository.GetByIdAsync(userId);
-            var ordersDto = mapper.Map<List<OrderDto>>(orders);
-            if (ordersDto == null)
+            string key = $"member-{userId}";
+            string cachedMember = await distributedCache.GetStringAsync(key);
+            List<OrderDto>? ordersDto;
+
+            if (string.IsNullOrEmpty(cachedMember))
             {
+                var orders = await orderRepository.GetByIdAsync(userId);
+                ordersDto = mapper.Map<List<OrderDto>>(orders);
+                if (ordersDto == null)
+                {
+                    return new ApiResponseDto<List<OrderDto>>
+                    {
+                        IsSuccess = false,
+                        Message = "Order not found!"
+                    };
+                }
+                await distributedCache.SetStringAsync(key, JsonSerializer.Serialize(ordersDto), new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpiration = DateTime.Now.AddMinutes(30)
+                });
                 return new ApiResponseDto<List<OrderDto>>
                 {
-                    IsSuccess = false,
-                    Message = "Order not found!"
+                    Data = ordersDto,
+                    IsSuccess = true,
+                    Message = "Order found."
                 };
             }
+            ordersDto = JsonSerializer.Deserialize<List<OrderDto>>(cachedMember);
             return new ApiResponseDto<List<OrderDto>>
             {
                 Data = ordersDto,
                 IsSuccess = true,
-                Message = "Order found."
+                Message = "Order found with Redis Cache."
             };
         }
     }

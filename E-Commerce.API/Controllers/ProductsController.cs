@@ -17,9 +17,9 @@ namespace E_Commerce.API.Controllers
             this.productService = productService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PaginationRequestDto paginationRequestDto)
         {
-            var response = await productService.GetAllAsync();
+            var response = await productService.GetAllAsync(paginationRequestDto.page, paginationRequestDto.limit);
             if (response.IsSuccess)
             {
                 return Ok(response);
