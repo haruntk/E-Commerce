@@ -9,7 +9,7 @@ namespace E_Commerce.API.Repositories.Interfaces
         public void CreateAsync(Product product);
         public Task<Product?> DeleteAsync(Guid id);
         public void UpdateByIdAsync(Product product);
-        public Task<List<Product>> GetAllAsync();
+        public Task<List<Product>> GetAllAsync(int skip, int limit);
         public Task<Product> GetByIdAsync(Guid id);
     }
 }

@@ -102,9 +102,15 @@ namespace E_Commerce.API.Services
             };
         }
 
-        public async Task<ApiResponseDto<List<ProductDto>>> GetAllAsync()
+        public async Task<ApiResponseDto<List<ProductDto>>> GetAllAsync(int page, int limit)
         {
-            var products = await productRepository.GetAllAsync();
+            if (page == 0)
+                page = 1;
+            if (limit == 0)
+                limit = 100;
+
+            var skip = (page - 1) * limit;
+            var products = await productRepository.GetAllAsync(skip, limit);
             var productsDto = mapper.Map<List<ProductDto>>(products);
             if (productsDto == null)
             {
