@@ -30,8 +30,9 @@ namespace E_Commerce.API.Services
                 {
                     return new ApiResponseDto<List<CategoryDto>>
                     {
+                        Data = categoriesDto,
                         IsSuccess = false,
-                        Message = "Operation Failed"
+                        Message = "There is no category"
                     };
                 }
                 memoryCache.Set(cacheKey, categoriesDto, new MemoryCacheEntryOptions
