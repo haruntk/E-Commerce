@@ -85,18 +85,9 @@ namespace E_Commerce.API.Services
         {
             var deletedProduct = await productRepository.DeleteAsync(id);
 
-            var deletedProductDto = mapper.Map<ProductDto>(deletedProduct);
-            if (deletedProductDto == null)
-            {
-                return new ApiResponseDto<ProductDto>()
-                {
-                    IsSuccess = false,
-                    Message = "Operation Failed"
-                };
-            }
             return new ApiResponseDto<ProductDto>
             {
-                Data = deletedProductDto,
+                Data = null,
                 IsSuccess = true,
                 Message = "Product Deleted Successfully"
             };

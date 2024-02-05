@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Dapper;
 using E_Commerce.API.Data;
 using E_Commerce.API.Models.DTO;
 using E_Commerce.API.Repositories.Entities;
 using E_Commerce.API.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce.API.Repositories
@@ -11,9 +13,11 @@ namespace E_Commerce.API.Repositories
     {
         private readonly ECommerceDbContext dbContext;
         private readonly IMapper mapper;
+        private readonly IConfiguration configuration;
 
-        public CategoryRepository(ECommerceDbContext dbContext, IMapper mapper)
+        public CategoryRepository(ECommerceDbContext dbContext, IMapper mapper, IConfiguration configuration)
         {
+            this.configuration = configuration;
             this.dbContext = dbContext;
             this.mapper = mapper;
         }
@@ -31,8 +35,13 @@ namespace E_Commerce.API.Repositories
         }
         public async void DeleteAsync(Category category)
         {
-            dbContext.Categories.Remove(category);
-            await dbContext.SaveChangesAsync();
+            var connection = new SqlConnection(configuration.GetConnectionString("ECommerceConnectionString"));
+            var sqlDeleteP = "DELETE FROM Categories WHERE Id = @Id";
+            var sqlDeleteC = "DELETE FROM ProductCategories WHERE CategoryId = @Id";
+            await connection.ExecuteAsync(sqlDeleteC, new { Id = category.Id });
+            await connection.ExecuteAsync(sqlDeleteP, new { Id = category.Id });
+            //dbContext.Categories.Remove(category);
+            //await dbContext.SaveChangesAsync();
         }
 
         public async Task<Category?> GetByIdAsync(Guid id)

@@ -5,7 +5,7 @@
 namespace E_Commerce.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddingMigration : Migration
+    public partial class update : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
