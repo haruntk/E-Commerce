@@ -88,7 +88,7 @@ namespace E_Commerce.API.Repositories
         public async void UpdateByIdAsync(Product product)
         {
             var connection = new SqlConnection(configuration.GetConnectionString("ECommerceConnectionString"));
-            string sql = "UPDATE Products SET Name = @Name, Price = @Price, Quantity = @Stock" +
+            string sql = "UPDATE Products SET Name = @Name, Price = @Price, Stock = @Stock" +
                 ", MainCategoryId = @MainCategoryId WHERE Id = @Id";
             await connection.ExecuteAsync(sql, product);
             //await dbContext.SaveChangesAsync();

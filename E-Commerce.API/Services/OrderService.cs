@@ -27,7 +27,7 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<Guid>> CreateAsync(OrderRequestDto orderRequestDto, string id)
         {
-            var orderItems = mapper.Map<List<OrderItem>>(orderRequestDto);
+            var orderItems = mapper.Map<List<OrderItem>>(orderRequestDto.OrderItems);
             var orderId = Guid.NewGuid();
             double totalPrice = 0;
             var productIds = orderRequestDto.OrderItems.Select(x => x.ProductId).ToList();
@@ -49,6 +49,7 @@ namespace E_Commerce.API.Services
                 item.Id = Guid.NewGuid();
                 totalPrice += item.UnitPrice * item.Quantity;
                 product.Stock -= item.Quantity;
+                productRepository.UpdateByIdAsync(product);
             }
             var order = new Order
             {

@@ -20,17 +20,17 @@ namespace E_Commerce.API.Repositories
 
         public async Task<int> CreateAsync(Order order, List<OrderItem> orderItems)
         {
-            var trans = dbContext.Database.BeginTransaction();
+            var trans = await dbContext.Database.BeginTransactionAsync();
             try
             {
                 await dbContext.Orders.AddAsync(order);
                 await dbContext.OrderItems.AddRangeAsync(orderItems);
-                trans.Commit();
+                await trans.CommitAsync();
                 return await dbContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                trans.Rollback();
+                await trans.RollbackAsync();
                 return await dbContext.SaveChangesAsync();
             }
         }
