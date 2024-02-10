@@ -33,7 +33,7 @@ namespace E_Commerce.API.Repositories
         public async void CreateAsync(Product product)
         {
             var connection = new SqlConnection(configuration.GetConnectionString("ECommerceConnectionString"));
-            var sql = "INSERT INTO Products (Id, Name, Price, Quantity, MainCategoryId) VALUES (@Id, @Name, @Price, @Stock, @MainCategoryId)";
+            var sql = "INSERT INTO Products (Id, Name, Price, Stock, MainCategoryId) VALUES (@Id, @Name, @Price, @Stock, @MainCategoryId)";
             await connection.ExecuteAsync(sql, product);
             //await dbContext.Products.AddAsync(product);
             //await dbContext.SaveChangesAsync();
@@ -42,10 +42,21 @@ namespace E_Commerce.API.Repositories
         public async Task<Product?> DeleteAsync(Guid id)
         {
             var connection = new SqlConnection(configuration.GetConnectionString("ECommerceConnectionString"));
-            var sqlDeleteP = "DELETE FROM Products WHERE Id = @Id";
-            var sqlDeleteC = "DELETE FROM ProductCategories WHERE ProductId = @Id";
-            await connection.ExecuteAsync(sqlDeleteC, new { Id = id });
-            await connection.ExecuteAsync(sqlDeleteP, new { Id = id });
+            await connection.OpenAsync();
+            var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                var sqlDeleteP = "DELETE FROM Products WHERE Id = @Id";
+                var sqlDeleteC = "DELETE FROM ProductCategories WHERE ProductId = @Id";
+                await connection.ExecuteAsync(sqlDeleteC, new { Id = id }, transaction);
+                await connection.ExecuteAsync(sqlDeleteP, new { Id = id }, transaction);
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
             //var product = await dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
             //if (product == null)
             //{
@@ -81,6 +92,6 @@ namespace E_Commerce.API.Repositories
                 ", MainCategoryId = @MainCategoryId WHERE Id = @Id";
             await connection.ExecuteAsync(sql, product);
             //await dbContext.SaveChangesAsync();
-        } 
+        }
     }
 }

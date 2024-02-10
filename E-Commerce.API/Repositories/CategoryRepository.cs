@@ -36,10 +36,20 @@ namespace E_Commerce.API.Repositories
         public async void DeleteAsync(Category category)
         {
             var connection = new SqlConnection(configuration.GetConnectionString("ECommerceConnectionString"));
-            var sqlDeleteP = "DELETE FROM Categories WHERE Id = @Id";
-            var sqlDeleteC = "DELETE FROM ProductCategories WHERE CategoryId = @Id";
-            await connection.ExecuteAsync(sqlDeleteC, new { Id = category.Id });
-            await connection.ExecuteAsync(sqlDeleteP, new { Id = category.Id });
+            await connection.OpenAsync();
+            var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                var sqlDeleteP = "DELETE FROM Categories WHERE Id = @Id";
+                var sqlDeleteC = "DELETE FROM ProductCategories WHERE CategoryId = @Id";
+                await connection.ExecuteAsync(sqlDeleteC, new { Id = category.Id }, transaction);
+                await connection.ExecuteAsync(sqlDeleteP, new { Id = category.Id }, transaction);
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+            }
             //dbContext.Categories.Remove(category);
             //await dbContext.SaveChangesAsync();
         }

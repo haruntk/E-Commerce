@@ -19,7 +19,7 @@ namespace E_Commerce.API.Repositories
         public async Task<int> Create(List<ProductCategory> productCategories)
         {
             var connection = new SqlConnection(configuration.GetConnectionString("ECommerceConnectionString"));
-            string sql = "INSERT INTO ProductCategories (Id, CategoryId, ProductId) VALUES (@Id, @CategoryId, @ProductId)";
+            string sql = "INSERT INTO ProductCategories (Id, CategoryId, ProductId, IsMain) VALUES (@Id, @CategoryId, @ProductId, @IsMain)";
             return await connection.ExecuteAsync(sql, productCategories);
             //await dbContext.ProductCategories.AddRangeAsync(productCategories);
             //return await dbContext.SaveChangesAsync();
