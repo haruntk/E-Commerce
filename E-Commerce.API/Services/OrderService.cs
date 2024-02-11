@@ -93,9 +93,17 @@ namespace E_Commerce.API.Services
                         Message = "Order not found!"
                     };
                 }
+                var groupedOrders = ordersDto.GroupBy(o => o.Id)
+                                             .Select(group =>
+                                             {
+                                                 var order = group.First();
+                                                 order.OrderItems = group.SelectMany(o => o.OrderItems).ToList();
+                                                 return order;
+                                             });
+                ordersDto = groupedOrders.ToList();
                 await distributedCache.SetStringAsync(key, JsonSerializer.Serialize(ordersDto), new DistributedCacheEntryOptions
                 {
-                    AbsoluteExpiration = DateTime.Now.AddMinutes(30)
+                    AbsoluteExpiration = DateTime.Now.AddMinutes(0.1)
                 });
                 return new ApiResponseDto<List<OrderDto>>
                 {

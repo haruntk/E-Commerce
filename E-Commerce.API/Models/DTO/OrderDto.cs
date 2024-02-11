@@ -9,5 +9,6 @@ namespace E_Commerce.API.Models.DTO
         public Status Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public double TotalPrice { get; set; }
+        public List<OrderItemDto> OrderItems { get; set; }
     }
 }

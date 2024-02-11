@@ -10,6 +10,7 @@ namespace E_Commerce.API.Repositories.Entities
         public Status Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public double TotalPrice { get; set; }
+        public List<OrderItem> OrderItems { get; set; }
     }
     public enum Status
     {
