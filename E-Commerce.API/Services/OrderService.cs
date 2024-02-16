@@ -27,6 +27,7 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<Guid>> CreateAsync(OrderRequestDto orderRequestDto, string id)
         {
+            await distributedCache.RemoveAsync($"member-{id}");
             var orderItems = mapper.Map<List<OrderItem>>(orderRequestDto.OrderItems);
             var orderId = Guid.NewGuid();
             double totalPrice = 0;
@@ -103,7 +104,7 @@ namespace E_Commerce.API.Services
                 ordersDto = groupedOrders.ToList();
                 await distributedCache.SetStringAsync(key, JsonSerializer.Serialize(ordersDto), new DistributedCacheEntryOptions
                 {
-                    AbsoluteExpiration = DateTime.Now.AddMinutes(0.1)
+                    AbsoluteExpiration = DateTime.Now.AddMinutes(30)
                 });
                 return new ApiResponseDto<List<OrderDto>>
                 {
