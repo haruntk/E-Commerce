@@ -27,7 +27,6 @@ namespace E_Commerce.API.Services
         }
         public async Task<ApiResponseDto<Guid>> CreateAsync(OrderRequestDto orderRequestDto, string id)
         {
-            await distributedCache.RemoveAsync($"member-{id}");
             var orderItems = mapper.Map<List<OrderItem>>(orderRequestDto.OrderItems);
             var orderId = Guid.NewGuid();
             double totalPrice = 0;
@@ -69,6 +68,7 @@ namespace E_Commerce.API.Services
                     Message = "Order could not be created."
                 };
             }
+            await distributedCache.RemoveAsync($"member-{id}");
             return new ApiResponseDto<Guid>
             {
                 Data = orderId,
