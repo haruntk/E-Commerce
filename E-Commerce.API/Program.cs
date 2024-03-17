@@ -53,10 +53,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("ECommerceConnectionString")));
+options.UseMySQL(builder.Configuration.GetConnectionString("ECommerceConnectionString")));
 
 builder.Services.AddDbContext<ECommerceAuthDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("ECommerceAuthConnectionString")));
+options.UseMySQL(builder.Configuration.GetConnectionString("ECommerceAuthConnectionString")));
 
 builder.Services.AddStackExchangeRedisCache(options =>
 options.Configuration = builder.Configuration.GetConnectionString("Redis"));

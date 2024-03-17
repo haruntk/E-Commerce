@@ -10,6 +10,7 @@ namespace E_Commerce.API.Data
         {
             
         }
+     
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
