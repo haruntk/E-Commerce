@@ -114,6 +114,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+//category oluþturulurken name olarak harun girilirse hata verdir.
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
